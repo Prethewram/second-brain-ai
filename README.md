@@ -3,7 +3,21 @@
 A FastAPI backend for personal memories, notes, tasks, profiles, and AI chat.
 Data is stored in PostgreSQL. Authenticated chat uses Gemini to extract actions,
 save supported information, and respond using the user's stored context.
-The current project provides an API; a frontend is not included.
+The project includes a React + TypeScript frontend built with Vite and a FastAPI API.
+
+## Frontend
+
+After starting the backend below, open another terminal with Node.js 24 installed:
+
+```powershell
+cd frontend
+npm ci
+npm run dev
+```
+
+Open `http://127.0.0.1:5173` to create an account, chat, and manage your library.
+The Vite proxy connects it to the backend at port 8000.
+See [the frontend guide](frontend/README.md) for browser tests and hosting setup.
 
 ## Local setup (Windows PowerShell)
 
