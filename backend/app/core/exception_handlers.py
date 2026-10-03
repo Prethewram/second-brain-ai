@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 
 from app.common.exceptions import (
+    AIProviderException,
     ConflictException,
     NotFoundException,
     UnauthorizedException,
@@ -10,6 +11,21 @@ from app.common.exceptions import (
 
 
 def register_exception_handlers(app: FastAPI):
+
+    @app.exception_handler(AIProviderException)
+    async def ai_provider_exception_handler(request: Request, exc: AIProviderException):
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={
+                "success": False,
+                "message": exc.message,
+                "data": {
+                    "conversation_id": exc.conversation_id,
+                    "message_saved": exc.conversation_id is not None,
+                    "actions_may_be_saved": exc.actions_may_be_saved,
+                },
+            },
+        )
 
     @app.exception_handler(ValidationException)
     async def validation_exception_handler(

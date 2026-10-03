@@ -1,4 +1,8 @@
-from app.common.exceptions import NotFoundException, ValidationException
+from app.common.exceptions import (
+    AIProviderException,
+    NotFoundException,
+    ValidationException,
+)
 from app.core.base_service import BaseService
 
 from app.modules.chat.repository import ChatRepository
@@ -56,7 +60,11 @@ class ChatService(BaseService):
             message,
         )
 
-        analysis: AnalysisResult = self.analyzer.analyze(message)
+        try:
+            analysis: AnalysisResult = self.analyzer.analyze(message)
+        except AIProviderException as exc:
+            exc.conversation_id = conversation.id
+            raise
 
         self.action_engine.execute(
             user_id=user_id,
@@ -65,10 +73,15 @@ class ChatService(BaseService):
 
         messages = self.repository.get_messages(conversation.id)
 
-        response = self.orchestrator.generate_reply(
-            user_id=user_id,
-            messages=messages,
-        )
+        try:
+            response = self.orchestrator.generate_reply(
+                user_id=user_id,
+                messages=messages,
+            )
+        except AIProviderException as exc:
+            exc.conversation_id = conversation.id
+            exc.actions_may_be_saved = bool(analysis.actions)
+            raise
 
         self.repository.add_message(
             conversation.id,

@@ -5,6 +5,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.models.conversation import Conversation
+from app.common.exceptions import AIProviderException
 from app.models.memory import Memory
 from app.models.message import Message
 from app.models.user import User
@@ -198,3 +199,38 @@ def test_provider_failure_returns_generic_500_and_keeps_only_user_message(
     assert [(m.role, m.content) for m in db_session.query(Message).all()] == [
         ("user", "Hello")
     ]
+
+
+@pytest.mark.parametrize("stage", [0, 1])
+def test_busy_provider_returns_saved_conversation_context(
+    client, chat_access, fake_ai, db_session, stage
+):
+    _, headers = chat_access
+    fake_ai[0].chat.return_value = json.dumps(
+        {"actions": [{"type": "memory.create", "payload": {"content": "Likes Python"}}]}
+    )
+    fake_ai[stage].chat.side_effect = AIProviderException(
+        "The AI model is busy right now. Please try again shortly."
+    )
+    response = client.post(
+        "/chat", headers=headers[0], json={"message": "Remember Python"}
+    )
+    assert response.status_code == 503
+    data = response.json()["data"]
+    assert data == {
+        "conversation_id": db_session.query(Conversation).one().id,
+        "message_saved": True,
+        "actions_may_be_saved": stage == 1,
+    }
+    assert db_session.query(Message).count() == 1
+    assert db_session.query(Memory).count() == stage
+    fake_ai[stage].chat.side_effect = None
+    fake_ai[0].chat.return_value = json.dumps({"actions": []})
+    result = client.post(
+        "/chat",
+        headers=headers[0],
+        json={"message": "Hello again", "conversation_id": data["conversation_id"]},
+    )
+    assert result.status_code == 200
+    assert result.json()["conversation_id"] == data["conversation_id"]
+    assert db_session.query(Conversation).count() == 1

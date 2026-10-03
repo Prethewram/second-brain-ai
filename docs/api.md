@@ -26,3 +26,18 @@ Unauthenticated requests return 401; malformed or blank messages return 422 befo
 calling the AI provider. Successful responses retain the existing `actions` and
 `reply` fields. This endpoint analyzes only; it does not execute extracted actions.
 Clients that previously called it anonymously must now supply an access token.
+
+## AI provider failures
+
+Provider overload and quota failures return 503 with a safe explanation instead
+of a generic 500. Configuration failures return 502. Raw provider errors and
+credentials are not included in API responses. The SDK handles transient retries
+inside the provider call; the application does not replay chat actions.
+
+When `/chat` fails after saving a message, its error `data` includes
+`conversation_id`, `message_saved: true`, and `actions_may_be_saved`.
+The frontend keeps this conversation ID for the next message, shows the actual
+cause, and refreshes the library. An analysis failure sets `actions_may_be_saved`
+to false; a reply failure sets it to true if extracted actions were attempted.
+There is no fabricated assistant reply and no automatic resubmission of the chat
+request. Provider downtime still requires waiting for the provider to recover.

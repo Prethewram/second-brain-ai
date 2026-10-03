@@ -53,10 +53,30 @@ export default function Chat({
       ]);
       await onUpdated();
     } catch (error) {
-      if (error instanceof ApiError && error.status === 401) onError(error);
-      setError(
-        "Your reply could not be completed. Your message or extracted actions may already be saved. Check your connection before sending again.",
-      );
+      if (error instanceof Error && error.name === "AbortError") return;
+      if (error instanceof ApiError && error.status === 401) {
+        onError(error);
+        return;
+      }
+      if (
+        error instanceof ApiError &&
+        error.data?.message_saved &&
+        Number.isInteger(error.data.conversation_id)
+      ) {
+        setConversation(error.data.conversation_id!);
+        setError(
+          `${error.message} Your message was saved. ${error.data.actions_may_be_saved ? "Some extracted actions may already be saved; review your library before repeating them." : "No extracted actions were saved."}`,
+        );
+        await onUpdated();
+      } else {
+        const cause =
+          error instanceof Error
+            ? error.message
+            : "Your reply could not be completed.";
+        setError(
+          `${cause} Your message or extracted actions may already be saved. Review your library before sending again.`,
+        );
+      }
     } finally {
       setBusy(false);
       input.current?.focus();

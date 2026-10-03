@@ -55,6 +55,11 @@ export class ApiError extends Error {
   constructor(
     message: string,
     public status: number,
+    public data?: {
+      conversation_id?: number;
+      message_saved?: boolean;
+      actions_may_be_saved?: boolean;
+    },
   ) {
     super(message);
   }
@@ -98,10 +103,11 @@ export async function request<T>(
         ? detail
         : "The request failed. Please try again.";
     throw new ApiError(
-      response.status === 502
+      response.status === 502 && !payload
         ? "Your server is unavailable. Check that the backend is running."
         : message,
       response.status,
+      payload?.data,
     );
   }
   return payload as T;

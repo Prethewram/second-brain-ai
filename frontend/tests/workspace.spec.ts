@@ -1,5 +1,56 @@
 import { test, expect, type Page } from "@playwright/test";
 
+for (const actionsSaved of [false, true]) {
+  test(`busy AI keeps the conversation and explains saved actions (${actionsSaved})`, async ({
+    page,
+  }) => {
+    const api = await mockApi(page);
+    let calls = 0;
+    await page.route("**/api/chat", (route) => {
+      calls++;
+      if (calls === 1)
+        return route.fulfill({
+          status: 503,
+          json: {
+            success: false,
+            message:
+              "The AI model is busy right now. Please try again shortly.",
+            data: {
+              conversation_id: 7,
+              message_saved: true,
+              actions_may_be_saved: actionsSaved,
+            },
+          },
+        });
+      return route.fallback();
+    });
+    await signIn(page);
+    await page
+      .getByLabel("Message", { exact: true })
+      .fill("Remember my preference.");
+    await page.getByRole("button", { name: "Send message" }).click();
+    await expect(page.getByRole("alert")).toContainText("AI model is busy");
+    await expect(page.getByRole("alert")).toContainText(
+      actionsSaved
+        ? "Some extracted actions may already be saved"
+        : "No extracted actions were saved",
+    );
+    await expect(
+      page.getByRole("button", { name: "New conversation" }),
+    ).toBeEnabled();
+    expect(calls).toBe(1);
+    await page.getByLabel("Message", { exact: true }).fill("Hello again");
+    await page.getByRole("button", { name: "Send message" }).click();
+    await expect(
+      page.getByText("A little more room for your thoughts.", { exact: false }),
+    ).toBeVisible();
+    expect(api.chatBodies).toEqual([
+      { message: "Hello again", conversation_id: 7 },
+    ]);
+    expect(calls).toBe(2);
+  });
+}
+
 async function mockApi(page: Page) {
   const user = { id: 1, name: "Alex Morgan", email: "alex@example.com" };
   let notes = [
