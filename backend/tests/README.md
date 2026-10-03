@@ -41,7 +41,8 @@ python -m pytest -q --cov=app --cov-report=term-missing --cov-report=xml
 
 GitHub Actions runs these checks and the complete PostgreSQL suite on pushes
 and pull requests. Coverage includes statements and branches, with an 80% minimum.
-Unexpected warnings fail tests. The one intentionally malformed Pydantic model
+Unexpected warnings fail tests, except Passlib's known Python 3.12 Unix `crypt`
+import deprecation (password hashing uses bcrypt). The intentionally malformed Pydantic model
 test explicitly checks its expected warning. The local PostgreSQL helper disables
 pytest's cache plugin to avoid Windows permissions conflicts between run users.
 
