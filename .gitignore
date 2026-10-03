@@ -9,3 +9,5 @@ htmlcov/
 coverage.xml
 .test-postgres/
 .env
+.env.*
+!.env.example
