@@ -1,0 +1,11 @@
+venv/
+.venv/
+.test-venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+.test-postgres/
+.env
