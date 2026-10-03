@@ -138,7 +138,7 @@ test("signs in, creates, edits, archives, restores and deletes a note", async ({
     .getByRole("button", { name: "Archive An even fresher idea" })
     .click();
   await expect(
-    page.getByRole("heading", { name: "An even fresher idea" }),
+    page.getByRole("heading", { name: "An even fresher idea", exact: true }),
   ).not.toBeVisible();
   await page.getByRole("button", { name: "Archived", exact: true }).click();
   await page
@@ -152,8 +152,9 @@ test("signs in, creates, edits, archives, restores and deletes a note", async ({
     .getByRole("dialog")
     .getByRole("button", { name: "Delete", exact: true })
     .click();
+  await expect(page.getByRole("dialog")).not.toBeVisible();
   await expect(
-    page.getByRole("heading", { name: "An even fresher idea" }),
+    page.getByRole("heading", { name: "An even fresher idea", exact: true }),
   ).not.toBeVisible();
 });
 
