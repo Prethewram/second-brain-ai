@@ -1,10 +1,12 @@
 from datetime import date
 
 from app.models.meeting import Meeting
+from app.models.notes import Note
 from app.ai.schemas.context import (
     AIContext,
     MemoryContext,
     MeetingContext,
+    NoteContext,
     TaskContext,
     UserContext,
 )
@@ -55,7 +57,25 @@ class ContextService:
         meeting_count = meetings.count()
         upcoming = meetings.order_by(Meeting.meeting_date, Meeting.id).limit(20).all()
 
+        notes = self.db.query(Note).filter(
+            Note.user_id == user_id, Note.is_archived.is_(False)
+        )
+        note_count = notes.count()
+        recent_notes = (
+            notes.order_by(Note.created_at.desc(), Note.id.desc()).limit(20).all()
+        )
+
         return AIContext(
+            note_count=note_count,
+            notes=[
+                NoteContext(
+                    title=n.title,
+                    content=n.content[:4000],
+                    category=n.category,
+                    meeting_id=n.meeting_id,
+                )
+                for n in recent_notes
+            ],
             current_date=today,
             upcoming_meeting_count=meeting_count,
             upcoming_meetings=[

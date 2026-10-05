@@ -29,6 +29,13 @@ class MeetingContext(BaseModel):
     agenda: str
 
 
+class NoteContext(BaseModel):
+    title: str
+    content: str
+    category: str | None = None
+    meeting_id: int | None = None
+
+
 class AIContext(BaseModel):
     user: UserContext
     memories: list[MemoryContext] = Field(default_factory=list)
@@ -36,3 +43,5 @@ class AIContext(BaseModel):
     current_date: date = Field(default_factory=date.today)
     upcoming_meetings: list[MeetingContext] = Field(default_factory=list)
     upcoming_meeting_count: int = 0
+    notes: list[NoteContext] = Field(default_factory=list)
+    note_count: int = 0

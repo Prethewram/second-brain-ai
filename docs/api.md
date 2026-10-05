@@ -40,6 +40,12 @@ meetings dated today or later, with the total matching count. Past and undated
 meetings are excluded. This lets chat answer upcoming meeting questions from
 saved records; it does not connect to an external calendar or infer meeting times.
 
+Chat also receives the newest 20 non-archived notes owned by the current user,
+including meeting notes, with the full active-note count. Each content excerpt
+is capped at 4000 characters. The prompt explains partial lists and directs users
+to the Notes library when more notes exist. Archived and other users' notes are
+excluded.
+
 ## AI analysis
 
 `POST /ai/analyze` requires a bearer token and a nonempty `message` string.

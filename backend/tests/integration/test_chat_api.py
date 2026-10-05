@@ -9,6 +9,7 @@ from app.models.conversation import Conversation
 from app.common.exceptions import AIProviderException
 from app.models.memory import Memory
 from app.models.meeting import Meeting
+from app.models.notes import Note
 from app.models.message import Message
 from app.models.user import User
 from app.modules.auth.security import create_access_token
@@ -111,6 +112,78 @@ def test_empty_meeting_context_explains_scope(client, chat_access, fake_ai):
     context = "\n".join(m["content"] for m in prompt if m["role"] == "system")
     assert "Total: 0" in context
     assert "no upcoming dated meetings are saved here" in context
+
+
+def test_chat_receives_owned_active_notes_including_meeting_notes(
+    client, chat_access, fake_ai, db_session
+):
+    users, headers = chat_access
+    db_session.add_all(
+        [
+            Note(
+                user_id=users[0].id,
+                title="Project ideas",
+                content="Build a knowledge hub",
+            ),
+            Note(
+                user_id=users[0].id,
+                title="Meeting followup",
+                content="Review the design",
+                source="meeting",
+            ),
+            Note(
+                user_id=users[0].id,
+                title="Archived secret",
+                content="Archived text",
+                is_archived=True,
+            ),
+            Note(user_id=users[1].id, title="Other secret", content="Private text"),
+        ]
+    )
+    db_session.commit()
+    response = client.post(
+        "/chat", headers=headers[0], json={"message": "List my notes"}
+    )
+    assert response.status_code == 200
+    prompt = fake_ai[1].chat.call_args.args[0]
+    context = "\n".join(m["content"] for m in prompt if m["role"] == "system")
+    assert "Total: 2" in context
+    for included in (
+        "Project ideas",
+        "Build a knowledge hub",
+        "Meeting followup",
+        "Review the design",
+    ):
+        assert included in context
+    for excluded in (
+        "Archived secret",
+        "Archived text",
+        "Other secret",
+        "Private text",
+    ):
+        assert excluded not in context
+
+
+def test_notes_context_is_bounded_and_reports_full_count(
+    client, chat_access, fake_ai, db_session
+):
+    users, headers = chat_access
+    db_session.add_all(
+        [
+            Note(user_id=users[0].id, title=f"Note {i}", content="x" * 5000)
+            for i in range(21)
+        ]
+    )
+    db_session.commit()
+    client.post("/chat", headers=headers[0], json={"message": "List my notes"})
+    prompt = fake_ai[1].chat.call_args.args[0]
+    section = next(
+        m["content"] for m in prompt if m["content"].startswith("Saved notes")
+    )
+    assert "Total: 21" in section
+    assert section.count("- Note ") == 20
+    assert "x" * 4000 in section
+    assert "x" * 4001 not in section
 
 
 def test_foreign_conversation_is_rejected_without_ai_calls_or_changes(
