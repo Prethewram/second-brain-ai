@@ -1214,6 +1214,32 @@ a {
   align-items: center;
   gap: 10px;
 }
+.voice-output-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-size: 11px;
+  color: #526b59;
+}
+.voice-output-controls label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+}
+.voice-output-controls input {
+  width: 14px;
+  height: 14px;
+  accent-color: #315e43;
+}
+.voice-output-controls select {
+  max-width: 200px;
+  width: auto;
+  font-size: 11px;
+  padding: 6px;
+}
 .voice-button {
   gap: 7px;
   color: #315e43;

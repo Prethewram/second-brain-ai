@@ -25,10 +25,12 @@ export default function VoiceInput({
   draft,
   onText,
   disabled,
+  onStart,
 }: {
   draft: string;
   onText: (text: string) => void;
   disabled: boolean;
+  onStart: () => void;
 }) {
   const recognition = useRef<Recognition | null>(null);
   const [listening, setListening] = useState(false);
@@ -68,6 +70,7 @@ export default function VoiceInput({
   }, []);
   function start() {
     if (!Constructor || disabled) return;
+    onStart();
     const current = new Constructor();
     recognition.current = current;
     const prefix = draft.trim();

@@ -40,6 +40,12 @@ the backend does not currently expose conversation-history retrieval.
   Recognition availability and language support depend on the browser/service.
   Use localhost for development and HTTPS in production. Unsupported browsers
   retain typed input. Leaving chat, switching tabs, or signing out stops capture.
+- Voice replies: Listen/Stop controls on each reply, optional Read replies aloud
+  for new replies, and a selector for available browser voices. Playback uses
+  rendered text instead of Markdown symbols. Recording, navigation, tab hiding,
+  new conversations, and signing out stop playback. Automatic playback may be
+  restricted by browser policies; use Listen if it does not start. Available
+  languages and voices depend on the browser and operating system.
 - Notes: create, edit, archive, restore, delete, and search.
 - Tasks: create, edit, complete, delete, search, and completed-item filtering.
 - Memories: search, edit, and delete; new memories are extracted through chat.

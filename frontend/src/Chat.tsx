@@ -9,13 +9,29 @@ import {
   LoaderCircle,
   Plus,
   Sparkles,
+  Volume2,
+  Square,
 } from "lucide-react";
 import { ApiError } from "./api";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import VoiceInput from "./VoiceInput";
+import useVoiceReply from "./useVoiceReply";
 
-function Reply({ text }: { text: string }) {
+function Reply({
+  text,
+  speaking,
+  onPlay,
+  onStop,
+  supported,
+}: {
+  text: string;
+  speaking: boolean;
+  onPlay: (text: string) => void;
+  onStop: () => void;
+  supported: boolean;
+}) {
+  const content = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState(false);
   useEffect(() => {
@@ -25,12 +41,25 @@ function Reply({ text }: { text: string }) {
   }, [copied]);
   return (
     <>
-      <div className="reply-markdown">
+      <div className="reply-markdown" ref={content}>
         <Markdown remarkPlugins={[remarkGfm]} skipHtml>
           {text}
         </Markdown>
       </div>
       <div className="reply-actions">
+        {supported && (
+          <button
+            type="button"
+            className="copy-reply"
+            aria-label={speaking ? "Stop reading reply" : "Listen to reply"}
+            onClick={() =>
+              speaking ? onStop() : onPlay(content.current?.innerText || text)
+            }
+          >
+            {speaking ? <Square size={14} /> : <Volume2 size={15} />}
+            {speaking ? "Stop" : "Listen"}
+          </button>
+        )}
         <button
           className="copy-reply"
           aria-label="Copy reply"
@@ -81,6 +110,20 @@ export default function Chat({
   const [voiceVersion, setVoiceVersion] = useState(0);
   const bottom = useRef<HTMLDivElement>(null);
   const input = useRef<HTMLTextAreaElement>(null);
+  const voice = useVoiceReply(active);
+  const transcript = useRef<HTMLDivElement>(null);
+  const processed = useRef(-1);
+  useEffect(() => {
+    const index = messages.length - 1;
+    if (index <= processed.current) return;
+    processed.current = index;
+    if (messages[index]?.role === "assistant" && voice.automatic && active) {
+      const cards =
+        transcript.current?.querySelectorAll<HTMLElement>(".reply-markdown");
+      const text = cards?.[cards.length - 1]?.innerText;
+      if (text) voice.play(index, text);
+    }
+  }, [messages, active, voice]);
   useEffect(() => {
     bottom.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [messages, busy]);
@@ -88,6 +131,7 @@ export default function Chat({
     event.preventDefault();
     const text = draft.trim();
     if (!text || busy) return;
+    voice.stop();
     setVoiceVersion((version) => version + 1);
     setDraft("");
     setError("");
@@ -162,6 +206,8 @@ export default function Chat({
           className="text-button"
           onClick={() => {
             setMessages([]);
+            voice.stop();
+            processed.current = -1;
             setConversation(null);
             setError("");
             setDraft("");
@@ -209,7 +255,7 @@ export default function Chat({
             </div>
           </div>
         ) : (
-          <div className="messages">
+          <div className="messages" ref={transcript}>
             {messages.map((message, index) => (
               <div className={`message ${message.role}`} key={index}>
                 {message.role === "assistant" && (
@@ -222,7 +268,16 @@ export default function Chat({
                     {message.role === "user" ? "You" : "Second Brain"}
                   </span>
                   {message.role === "assistant" ? (
-                    <Reply text={message.text} />
+                    <Reply
+                      text={message.text}
+                      supported={voice.supported}
+                      speaking={voice.speaking === index}
+                      onStop={voice.stop}
+                      onPlay={(text) => {
+                        setVoiceVersion((version) => version + 1);
+                        voice.play(index, text);
+                      }}
+                    />
                   ) : (
                     <p>{message.text}</p>
                   )}
@@ -245,11 +300,49 @@ export default function Chat({
         </p>
       )}
       <form className="composer" onSubmit={send}>
+        <div className="voice-output-controls">
+          {voice.supported ? (
+            <>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={voice.automatic}
+                  onChange={(event) => {
+                    voice.setAutomatic(event.target.checked);
+                    if (!event.target.checked) voice.stop();
+                  }}
+                />{" "}
+                Read replies aloud
+              </label>
+              <select
+                aria-label="Reply voice"
+                value={voice.voiceURI}
+                onChange={(event) => {
+                  voice.stop();
+                  voice.setVoiceURI(event.target.value);
+                }}
+              >
+                <option value="">Default voice</option>
+                {voice.voices.map((v) => (
+                  <option key={v.voiceURI} value={v.voiceURI}>
+                    {v.name} ({v.lang})
+                  </option>
+                ))}
+              </select>
+            </>
+          ) : (
+            <span>Voice replies are unavailable in this browser.</span>
+          )}
+        </div>
+        <p className="voice-status" role="status">
+          {voice.status}
+        </p>
         <VoiceInput
           key={voiceVersion}
           draft={draft}
           onText={setDraft}
           disabled={busy || !active}
+          onStart={voice.stop}
         />
         <textarea
           ref={input}

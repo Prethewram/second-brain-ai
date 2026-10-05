@@ -1,5 +1,75 @@
 import { test, expect, type Page } from "@playwright/test";
 
+test("voice replies support manual playback, automatic reading and cleanup", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const state = { spoken: [] as string[], cancelled: 0 };
+    Object.defineProperty(window, "voiceTest", { value: state });
+    Object.defineProperty(window, "SpeechSynthesisUtterance", {
+      value: class {
+        text: string;
+        constructor(text: string) {
+          this.text = text;
+        }
+      },
+    });
+    Object.defineProperty(window, "speechSynthesis", {
+      value: {
+        getVoices: () => [
+          { voiceURI: "test-voice", name: "Test English", lang: "en-IN" },
+        ],
+        addEventListener() {},
+        removeEventListener() {},
+        speak(utterance: { text: string }) {
+          state.spoken.push(utterance.text);
+        },
+        cancel() {
+          state.cancelled++;
+        },
+      },
+    });
+  });
+  await mockApi(page);
+  await page.route("**/api/chat", (route) =>
+    route.fulfill({
+      json: { conversation_id: 1, response: "**Hello** from your notes." },
+    }),
+  );
+  await signIn(page);
+  await page.getByLabel("Message", { exact: true }).fill("Hello");
+  await page.getByRole("button", { name: "Send message" }).click();
+  await expect(
+    page.getByRole("button", { name: "Listen to reply" }),
+  ).toBeVisible();
+  const snapshot = () =>
+    page.evaluate(
+      () =>
+        (
+          window as unknown as {
+            voiceTest: { spoken: string[]; cancelled: number };
+          }
+        ).voiceTest,
+    );
+  expect((await snapshot()).spoken).toEqual([]);
+  await page.getByRole("button", { name: "Listen to reply" }).click();
+  expect((await snapshot()).spoken).toEqual(["Hello from your notes."]);
+  await page.getByRole("button", { name: "Stop reading reply" }).click();
+  expect((await snapshot()).cancelled).toBe(1);
+  await page.getByLabel("Read replies aloud").check();
+  await page.getByLabel("Reply voice").selectOption("test-voice");
+  await page.getByLabel("Message", { exact: true }).fill("Again");
+  await page.getByRole("button", { name: "Send message" }).click();
+  await expect(
+    page.getByRole("button", { name: "Stop reading reply" }),
+  ).toBeVisible();
+  expect((await snapshot()).spoken).toHaveLength(2);
+  await page.getByRole("button", { name: /^Notes/ }).click();
+  expect((await snapshot()).cancelled).toBe(2);
+  await page.getByRole("button", { name: "Thinking space" }).click();
+  expect((await snapshot()).spoken).toHaveLength(2);
+});
+
 test("voice drafts commands without sending and stops on navigation", async ({
   page,
 }) => {
