@@ -35,6 +35,11 @@ and task creation fields and return 201. These items also appear in `/notes` and
 `/tasks`; use their existing edit and completion routes to update them. Meeting
 capture and linking do not call the AI provider.
 
+Chat reply context includes the current server date and the earliest 20 owned
+meetings dated today or later, with the total matching count. Past and undated
+meetings are excluded. This lets chat answer upcoming meeting questions from
+saved records; it does not connect to an external calendar or infer meeting times.
+
 ## AI analysis
 
 `POST /ai/analyze` requires a bearer token and a nonempty `message` string.

@@ -1,6 +1,10 @@
+from datetime import date
+
+from app.models.meeting import Meeting
 from app.ai.schemas.context import (
     AIContext,
     MemoryContext,
+    MeetingContext,
     TaskContext,
     UserContext,
 )
@@ -20,6 +24,7 @@ class ContextService:
         task_repository=None,
     ):
 
+        self.db = db
         self.user_repository = user_repository or UserRepository(db)
 
         self.memory_repository = memory_repository or MemoryRepository(db)
@@ -43,7 +48,25 @@ class ContextService:
             limit=10,
         )
 
+        today = date.today()
+        meetings = self.db.query(Meeting).filter(
+            Meeting.user_id == user_id, Meeting.meeting_date >= today
+        )
+        meeting_count = meetings.count()
+        upcoming = meetings.order_by(Meeting.meeting_date, Meeting.id).limit(20).all()
+
         return AIContext(
+            current_date=today,
+            upcoming_meeting_count=meeting_count,
+            upcoming_meetings=[
+                MeetingContext(
+                    title=m.title,
+                    meeting_date=m.meeting_date,
+                    attendees=m.attendees[:2000],
+                    agenda=m.agenda[:4000],
+                )
+                for m in upcoming
+            ],
             user=UserContext(
                 id=user.id,
                 name=user.name,

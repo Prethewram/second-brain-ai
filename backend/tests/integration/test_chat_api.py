@@ -1,4 +1,5 @@
 import json
+from datetime import date, timedelta
 from unittest.mock import Mock
 
 import pytest
@@ -7,6 +8,7 @@ from fastapi.testclient import TestClient
 from app.models.conversation import Conversation
 from app.common.exceptions import AIProviderException
 from app.models.memory import Memory
+from app.models.meeting import Meeting
 from app.models.message import Message
 from app.models.user import User
 from app.modules.auth.security import create_access_token
@@ -69,6 +71,46 @@ def test_new_chat_and_continuation_persist_and_use_ordered_history(
         {"role": "assistant", "content": "AI reply"},
         {"role": "user", "content": "Second"},
     ]
+
+
+def test_upcoming_meetings_enter_chat_context_in_date_order_only_for_owner(
+    client, chat_access, fake_ai, db_session
+):
+    users, headers = chat_access
+    today = date.today()
+    db_session.add_all(
+        [
+            Meeting(user_id=owner, title=title, meeting_date=day, minutes="Minutes")
+            for owner, title, day in [
+                (users[0].id, "Tomorrow planning", today + timedelta(days=1)),
+                (users[0].id, "Today review", today),
+                (users[0].id, "Past meeting", today - timedelta(days=1)),
+                (users[0].id, "Undated meeting", None),
+                (users[1].id, "Private meeting", today),
+            ]
+        ]
+    )
+    db_session.commit()
+    result = client.post(
+        "/chat", headers=headers[0], json={"message": "Any upcoming meetings?"}
+    )
+    assert result.status_code == 200
+    prompt = fake_ai[1].chat.call_args.args[0]
+    context = "\n".join(m["content"] for m in prompt if m["role"] == "system")
+    assert "Total: 2" in context
+    assert today.isoformat() in context
+    assert context.index("Today review") < context.index("Tomorrow planning")
+    for excluded in ("Past meeting", "Undated meeting", "Private meeting"):
+        assert excluded not in context
+
+
+def test_empty_meeting_context_explains_scope(client, chat_access, fake_ai):
+    _, headers = chat_access
+    client.post("/chat", headers=headers[0], json={"message": "Upcoming meetings?"})
+    prompt = fake_ai[1].chat.call_args.args[0]
+    context = "\n".join(m["content"] for m in prompt if m["role"] == "system")
+    assert "Total: 0" in context
+    assert "no upcoming dated meetings are saved here" in context
 
 
 def test_foreign_conversation_is_rejected_without_ai_calls_or_changes(

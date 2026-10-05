@@ -1,3 +1,5 @@
+from datetime import date
+
 from pydantic import BaseModel, Field
 
 
@@ -20,7 +22,17 @@ class UserContext(BaseModel):
     email: str
 
 
+class MeetingContext(BaseModel):
+    title: str
+    meeting_date: date
+    attendees: str
+    agenda: str
+
+
 class AIContext(BaseModel):
     user: UserContext
     memories: list[MemoryContext] = Field(default_factory=list)
     tasks: list[TaskContext] = Field(default_factory=list)
+    current_date: date = Field(default_factory=date.today)
+    upcoming_meetings: list[MeetingContext] = Field(default_factory=list)
+    upcoming_meeting_count: int = 0
