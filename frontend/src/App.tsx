@@ -403,6 +403,7 @@ export default function App() {
             onUpdated={refresh}
             onError={handleError}
             userName={user.name}
+            userId={user.id}
             active={view === "chat"}
           />
           <aside className="context-rail">

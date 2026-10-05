@@ -1223,6 +1223,35 @@ a {
   font-size: 11px;
   color: #526b59;
 }
+.personal-greeting {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 18px 22px;
+  background: #f0f5eb;
+  border-bottom: 1px solid #e2e9dd;
+}
+.personal-greeting .eyebrow {
+  font-size: 8px;
+  letter-spacing: 1px;
+  color: #71836c;
+}
+.personal-greeting h2 {
+  font-size: 20px;
+  line-height: 1.5;
+  margin: 4px 0 0;
+  color: #244b35;
+}
+.personal-greeting h2 span {
+  color: #53764b;
+}
+.personal-greeting button {
+  font-size: 11px;
+  gap: 6px;
+  color: #42643e;
+}
 .voice-output-controls label {
   display: flex;
   align-items: center;

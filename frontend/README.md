@@ -46,6 +46,13 @@ the backend does not currently expose conversation-history retrieval.
   new conversations, and signing out stop playback. Automatic playback may be
   restricted by browser policies; use Listen if it does not start. Available
   languages and voices depend on the browser and operating system.
+- Thinking space greets the signed-in user by name using device local time:
+  morning before 12:00, afternoon from 12:00 to 16:59, evening from 17:00.
+  It attempts a spoken welcome on first entry and on a new period/day, remembering
+  successful playback per account in this tab's sessionStorage. Hear greeting
+  allows manual playback when automatic speech is blocked. The greeting updates
+  while the screen is open and does not repeat on ordinary navigation or refresh
+  after successful playback in the same period.
 - Notes: create, edit, archive, restore, delete, and search.
 - Tasks: create, edit, complete, delete, search, and completed-item filtering.
 - Memories: search, edit, and delete; new memories are extracted through chat.

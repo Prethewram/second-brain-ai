@@ -1,10 +1,79 @@
 import { test, expect, type Page } from "@playwright/test";
 
+test("personal greeting changes with time and speaks once per period", async ({
+  page,
+}) => {
+  await page.clock.install({ time: new Date(2026, 9, 5, 9, 0) });
+  await page.addInitScript(() => {
+    const spoken: string[] = [];
+    Object.defineProperty(window, "greetingsTest", { value: spoken });
+    Object.defineProperty(window, "SpeechSynthesisUtterance", {
+      value: class {
+        text: string;
+        constructor(text: string) {
+          this.text = text;
+        }
+      },
+    });
+    Object.defineProperty(window, "speechSynthesis", {
+      value: {
+        getVoices: () => [],
+        addEventListener() {},
+        removeEventListener() {},
+        cancel() {},
+        speak(utterance: { text: string; onstart?: () => void }) {
+          spoken.push(utterance.text);
+          utterance.onstart?.();
+        },
+      },
+    });
+  });
+  await mockApi(page);
+  await signIn(page);
+  await expect(
+    page.getByRole("heading", { name: "Good morning, Alex Morgan." }),
+  ).toBeVisible();
+  const spoken = () =>
+    page.evaluate(
+      () => (window as unknown as { greetingsTest: string[] }).greetingsTest,
+    );
+  expect(await spoken()).toEqual(["Good morning, Alex Morgan."]);
+  await page.getByRole("button", { name: /^Notes/ }).click();
+  await page.getByRole("button", { name: "Thinking space" }).click();
+  expect(await spoken()).toHaveLength(1);
+  await page.clock.setSystemTime(new Date(2026, 9, 5, 13, 0));
+  await page.clock.runFor(30000);
+  await expect(
+    page.getByRole("heading", { name: "Good afternoon, Alex Morgan." }),
+  ).toBeVisible();
+  expect(await spoken()).toHaveLength(2);
+  await page.getByRole("button", { name: /^Notes/ }).click();
+  await page.clock.setSystemTime(new Date(2026, 9, 5, 18, 0));
+  await page.getByRole("button", { name: "Thinking space" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Good evening, Alex Morgan." }),
+  ).toBeVisible();
+  expect(await spoken()).toHaveLength(3);
+  await page.getByRole("button", { name: "Hear greeting" }).click();
+  expect(await spoken()).toHaveLength(4);
+});
+
 test("voice replies support manual playback, automatic reading and cleanup", async ({
   page,
 }) => {
   await page.addInitScript(() => {
     const state = { spoken: [] as string[], cancelled: 0 };
+    const now = new Date();
+    const period =
+      now.getHours() < 12
+        ? "morning"
+        : now.getHours() < 17
+          ? "afternoon"
+          : "evening";
+    sessionStorage.setItem(
+      "second-brain-greeting:1",
+      `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}:${period}`,
+    );
     Object.defineProperty(window, "voiceTest", { value: state });
     Object.defineProperty(window, "SpeechSynthesisUtterance", {
       value: class {

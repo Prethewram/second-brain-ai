@@ -17,6 +17,7 @@ import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import VoiceInput from "./VoiceInput";
 import useVoiceReply from "./useVoiceReply";
+import Greeting from "./Greeting";
 
 function Reply({
   text,
@@ -95,12 +96,14 @@ export default function Chat({
   onError,
   userName,
   active,
+  userId,
 }: {
   call: <T>(path: string, method?: string, body?: unknown) => Promise<T>;
   onUpdated: () => Promise<void>;
   onError: (error: unknown) => void;
   userName: string;
   active: boolean;
+  userId: number;
 }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [conversation, setConversation] = useState<number | null>(null);
@@ -219,6 +222,13 @@ export default function Chat({
           New conversation
         </button>
       </div>
+      <Greeting
+        userId={userId}
+        name={userName}
+        active={active && !busy}
+        supported={voice.supported}
+        speak={(text, started) => voice.play(-1, text, started)}
+      />
       <div className="chat-scroll">
         {messages.length === 0 ? (
           <div className="chat-welcome">

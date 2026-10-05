@@ -14,6 +14,7 @@ export default function useVoiceReply(active: boolean) {
     utterance.current = null;
     if (current) {
       current.onend = null;
+      current.onstart = null;
       current.onerror = null;
       window.speechSynthesis.cancel();
     }
@@ -38,7 +39,7 @@ export default function useVoiceReply(active: boolean) {
   useEffect(() => {
     if (!active) stop();
   }, [active, stop]);
-  function play(index: number, text: string) {
+  function play(index: number, text: string, started?: () => void) {
     if (!supported || !active || !text.trim()) return;
     stop();
     const next = new SpeechSynthesisUtterance(text);
@@ -48,6 +49,9 @@ export default function useVoiceReply(active: boolean) {
       next.lang = voice.lang;
     } else next.lang = navigator.language || "en-IN";
     utterance.current = next;
+    next.onstart = () => {
+      if (utterance.current === next) started?.();
+    };
     next.onend = () => {
       if (utterance.current !== next) return;
       utterance.current = null;
