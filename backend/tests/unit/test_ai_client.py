@@ -53,3 +53,38 @@ def test_empty_provider_reply_is_not_saved_as_success(provider, text):
 def test_valid_provider_reply_is_preserved(provider):
     provider.models.generate_content.return_value = SimpleNamespace(text="A reply")
     assert AIClient().chat([{"role": "user", "content": "Hello"}]) == "A reply"
+
+
+def test_busy_primary_uses_fallback_without_replaying_prompt(provider, monkeypatch):
+    monkeypatch.setattr("app.ai.client.settings.GEMINI_MODEL", "primary")
+    monkeypatch.setattr("app.ai.client.settings.GEMINI_FALLBACK_MODEL", "fallback")
+    provider.models.generate_content.side_effect = [
+        errors.APIError(503, {"error": {"message": "Busy", "code": 503}}),
+        SimpleNamespace(text="Fallback reply"),
+    ]
+    assert AIClient().chat([{"role": "user", "content": "Hello"}]) == "Fallback reply"
+    calls = provider.models.generate_content.call_args_list
+    assert [call.kwargs["model"] for call in calls] == ["primary", "fallback"]
+    assert calls[0].kwargs["contents"] == calls[1].kwargs["contents"]
+
+
+@pytest.mark.parametrize("code", [400, 401, 403, 404, 429])
+def test_configuration_and_quota_errors_do_not_switch_models(provider, code):
+    provider.models.generate_content.side_effect = errors.APIError(
+        code, {"error": {"message": "Rejected", "code": code}}
+    )
+    with pytest.raises(AIProviderException):
+        AIClient().chat([])
+    assert provider.models.generate_content.call_count == 1
+
+
+@pytest.mark.parametrize("fallback", ["", "primary"])
+def test_disabled_or_identical_fallback_is_not_called(provider, monkeypatch, fallback):
+    monkeypatch.setattr("app.ai.client.settings.GEMINI_MODEL", "primary")
+    monkeypatch.setattr("app.ai.client.settings.GEMINI_FALLBACK_MODEL", fallback)
+    provider.models.generate_content.side_effect = errors.APIError(
+        503, {"error": {"message": "Busy", "code": 503}}
+    )
+    with pytest.raises(AIProviderException):
+        AIClient().chat([])
+    assert provider.models.generate_content.call_count == 1

@@ -41,3 +41,11 @@ cause, and refreshes the library. An analysis failure sets `actions_may_be_saved
 to false; a reply failure sets it to true if extracted actions were attempted.
 There is no fabricated assistant reply and no automatic resubmission of the chat
 request. Provider downtime still requires waiting for the provider to recover.
+
+The AI client switches to `GEMINI_FALLBACK_MODEL` if the primary model returns
+408/500/502/503/504 or its connection fails. The default fallback is
+`gemini-3.1-flash-lite`; set it to an empty string to disable it. Configuration,
+permission, and quota errors do not switch models. Each model request has a
+30-second timeout and at most two SDK attempts. Only generation is retried;
+database writes and action execution are not replayed. Both models use the
+same Gemini API key, and fallback responses may differ in quality.

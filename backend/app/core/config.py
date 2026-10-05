@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int
     GEMINI_API_KEY: str
     GEMINI_MODEL: str = "gemini-2.5-flash"
+    GEMINI_FALLBACK_MODEL: str = "gemini-3.1-flash-lite"
     AI_PROVIDER: str = "gemini"
     ENABLE_DEV_ENDPOINTS: bool = False
 
