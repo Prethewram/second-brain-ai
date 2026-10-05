@@ -3,12 +3,60 @@ import {
   ArrowUp,
   BrainCircuit,
   CheckCheck,
+  Copy,
+  Check,
   Lightbulb,
   LoaderCircle,
   Plus,
   Sparkles,
 } from "lucide-react";
 import { ApiError } from "./api";
+import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
+function Reply({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  const [copyError, setCopyError] = useState(false);
+  useEffect(() => {
+    if (!copied) return;
+    const timer = window.setTimeout(() => setCopied(false), 2000);
+    return () => window.clearTimeout(timer);
+  }, [copied]);
+  return (
+    <>
+      <div className="reply-markdown">
+        <Markdown remarkPlugins={[remarkGfm]} skipHtml>
+          {text}
+        </Markdown>
+      </div>
+      <div className="reply-actions">
+        <button
+          className="copy-reply"
+          aria-label="Copy reply"
+          onClick={async () => {
+            try {
+              await navigator.clipboard.writeText(text);
+              setCopied(true);
+              setCopyError(false);
+            } catch {
+              setCopyError(true);
+            }
+          }}
+        >
+          {copied ? <Check size={14} /> : <Copy size={14} />}
+          {copied ? "Copied" : "Copy reply"}
+        </button>
+        <span role="status">
+          {copyError
+            ? "Could not copy. Select the text to copy it."
+            : copied
+              ? "Reply copied"
+              : ""}
+        </span>
+      </div>
+    </>
+  );
+}
 
 type Message = { role: "user" | "assistant"; text: string };
 export default function Chat({
@@ -166,7 +214,11 @@ export default function Chat({
                   <span className="message-name">
                     {message.role === "user" ? "You" : "Second Brain"}
                   </span>
-                  <p>{message.text}</p>
+                  {message.role === "assistant" ? (
+                    <Reply text={message.text} />
+                  ) : (
+                    <p>{message.text}</p>
+                  )}
                 </div>
               </div>
             ))}
@@ -189,7 +241,7 @@ export default function Chat({
         <textarea
           ref={input}
           aria-label="Message"
-          placeholder="Leave a thought here…"
+          placeholder="Ask about your notes, plan your day, or save a thought…"
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
           maxLength={12000}
@@ -208,7 +260,7 @@ export default function Chat({
         />
         <div className="composer-bottom">
           <span>
-            <Sparkles size={13} /> A thought today. A connection tomorrow.
+            <Sparkles size={13} /> Enter to send · Shift + Enter for a new line
           </span>
           <button
             className="send-button"

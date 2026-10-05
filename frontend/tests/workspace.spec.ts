@@ -1,5 +1,50 @@
 import { test, expect, type Page } from "@playwright/test";
 
+test("formatted replies render safely and fit desktop and mobile", async ({
+  page,
+}) => {
+  await mockApi(page);
+  await page.route("**/api/chat", (route) =>
+    route.fulfill({
+      json: {
+        conversation_id: 1,
+        response:
+          "## Your active notes\n\nHere are your **2 saved notes**:\n\n- **Database backup** — Take a snapshot every 5 days.\n- **Server renewal** — Renew the server on 11 October.\n\n| Note | Next step |\n| --- | --- |\n| Backup | Schedule a snapshot |\n\n`Review your library`\n\n<script>window.unsafeReply = true</script>\n\n[Unsafe link](javascript:alert(1))",
+      },
+    }),
+  );
+  await signIn(page);
+  await page.getByLabel("Message", { exact: true }).fill("List my notes");
+  await page.getByRole("button", { name: "Send message" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Your active notes" }),
+  ).toBeVisible();
+  await expect(page.locator(".reply-markdown strong").first()).toHaveText(
+    "2 saved notes",
+  );
+  await expect(page.locator(".reply-markdown li")).toHaveCount(2);
+  await expect(page.locator(".reply-markdown table")).toBeVisible();
+  expect(await page.locator(".reply-markdown script").count()).toBe(0);
+  expect(
+    await page.getByRole("link", { name: "Unsafe link" }).getAttribute("href"),
+  ).not.toContain("javascript:");
+  await page.screenshot({
+    path: "test-results/chat-redesign-desktop.png",
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.getByRole("button", { name: "Copy reply" })).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await page.screenshot({
+    path: "test-results/chat-redesign-mobile.png",
+    fullPage: true,
+  });
+});
+
 for (const actionsSaved of [false, true]) {
   test(`busy AI keeps the conversation and explains saved actions (${actionsSaved})`, async ({
     page,

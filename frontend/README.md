@@ -30,6 +30,9 @@ the backend does not currently expose conversation-history retrieval.
 - JSON registration/login and authenticated requests.
 - Chat with conversation continuity, new conversations, pending/error states,
   and library refresh after a reply.
+- Readable reply cards with Markdown headings, lists, tables, and code blocks,
+  plus a copy-reply button. Raw HTML is disabled and unsafe link schemes are
+  filtered by the Markdown renderer.
 - Notes: create, edit, archive, restore, delete, and search.
 - Tasks: create, edit, complete, delete, search, and completed-item filtering.
 - Memories: search, edit, and delete; new memories are extracted through chat.

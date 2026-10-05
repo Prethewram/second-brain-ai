@@ -1054,13 +1054,16 @@ a {
   padding: 12px 12px 17px;
 }
 .messages {
-  padding: 24px 25px;
+  padding: 30px 28px;
+  width: 100%;
+  max-width: 850px;
+  margin: 0 auto;
 }
 .message {
   display: flex;
-  gap: 10px;
-  margin-bottom: 25px;
-  font-size: 13px;
+  gap: 14px;
+  margin-bottom: 28px;
+  font-size: 15px;
   line-height: 1.8;
 }
 .message > div {
@@ -1068,23 +1071,168 @@ a {
   max-width: 92%;
   overflow-wrap: anywhere;
 }
+.message.assistant > div {
+  flex: 1;
+  max-width: calc(100% - 50px);
+  padding: 18px 22px 12px;
+  border: 1px solid #e5ebe4;
+  border-radius: 4px 18px 18px;
+  background: #fff;
+  box-shadow: 0 3px 16px #183c2605;
+}
+.chat-scroll {
+  background: linear-gradient(180deg, #f8faf7 0%, #fff 80%);
+}
+.panel-top {
+  font-size: 12px;
+  color: #5c7163;
+  padding: 18px 0;
+}
+.panel-top .text-button {
+  font-size: 12px;
+  color: #456a55;
+}
+.reply-markdown {
+  color: #2c4439;
+  line-height: 1.8;
+}
+.reply-markdown p {
+  white-space: normal;
+  margin: 0 0 14px;
+}
+.reply-markdown > :last-child {
+  margin-bottom: 0;
+}
+.reply-markdown strong {
+  font-weight: 700;
+  color: #193e2c;
+}
+.reply-markdown ul,
+.reply-markdown ol {
+  padding-left: 22px;
+  margin: 12px 0 18px;
+}
+.reply-markdown li {
+  padding-left: 5px;
+  margin: 8px 0;
+}
+.reply-markdown li::marker {
+  color: #72916c;
+}
+.reply-markdown li p {
+  margin: 5px 0;
+}
+.reply-markdown h1,
+.reply-markdown h2,
+.reply-markdown h3 {
+  font-family: "Manrope", sans-serif;
+  font-size: 18px;
+  line-height: 1.4;
+  margin: 22px 0 12px;
+  letter-spacing: -0.3px;
+}
+.reply-markdown > :first-child {
+  margin-top: 0;
+}
+.reply-markdown a {
+  color: #24694d;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.reply-markdown blockquote {
+  margin: 16px 0;
+  padding: 10px 16px;
+  border-left: 3px solid #92b08c;
+  background: #f4f7f1;
+  border-radius: 0 8px 8px 0;
+}
+.reply-markdown code {
+  font-size: 0.88em;
+  background: #edf2eb;
+  padding: 2px 5px;
+  border-radius: 4px;
+}
+.reply-markdown pre {
+  overflow-x: auto;
+  padding: 16px;
+  background: #eff3ed;
+  border-radius: 10px;
+}
+.reply-markdown pre code {
+  padding: 0;
+  background: transparent;
+}
+.reply-markdown table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 13px;
+}
+.reply-markdown th,
+.reply-markdown td {
+  border: 1px solid #dfe7dc;
+  padding: 9px 12px;
+  text-align: left;
+}
+.reply-markdown th {
+  background: #f0f5ec;
+}
+.reply-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-top: 1px solid #eef1eb;
+  margin-top: 18px;
+  padding-top: 8px;
+  font-size: 11px;
+  color: #64796a;
+}
+.copy-reply {
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  color: #64796a;
+  font-size: 11px;
+}
+.copy-reply:hover {
+  background: #edf3e9;
+  color: #234f37;
+}
+.composer:focus-within {
+  border-color: #83a780;
+  box-shadow: 0 0 0 3px #779b6d12;
+}
+.composer textarea {
+  font-size: 14px;
+}
+.composer-bottom > span {
+  color: #71856d;
+  font-size: 10px;
+}
+.send-button {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+}
 .message p {
   white-space: pre-wrap;
 }
 .message-name {
-  font-size: 9px;
+  font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 1px;
   font-weight: 600;
-  color: #94a28b;
+  color: #647b68;
   display: block;
   margin-bottom: 7px;
 }
 .message-avatar {
   display: grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
+  width: 36px;
+  height: 36px;
   background: #eef4e5;
   border-radius: 9px;
   flex-shrink: 0;
@@ -1094,7 +1242,7 @@ a {
   justify-content: flex-end;
 }
 .message.user > div {
-  background: #eff4ea;
+  background: #e9f0e3;
   border-radius: 12px 12px 3px 12px;
   padding: 13px 17px;
 }
@@ -2086,7 +2234,16 @@ a {
     font-size: 11px;
   }
   .message {
-    font-size: 12px;
+    font-size: 14px;
+    gap: 9px;
+  }
+  .message.assistant > div {
+    padding: 14px 15px 10px;
+    max-width: calc(100% - 41px);
+  }
+  .message-avatar {
+    width: 32px;
+    height: 32px;
   }
   .messages {
     padding: 23px 17px;
