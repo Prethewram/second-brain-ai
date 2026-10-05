@@ -1204,6 +1204,48 @@ a {
   border-color: #83a780;
   box-shadow: 0 0 0 3px #779b6d12;
 }
+.voice-input {
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #e6ece1;
+}
+.voice-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.voice-button {
+  gap: 7px;
+  color: #315e43;
+  background: #edf3e8;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+.voice-button.listening {
+  color: #9d3c32;
+  background: #fbeae5;
+}
+.voice-controls select {
+  width: auto;
+  min-width: 0;
+  padding: 6px 8px;
+  font-size: 11px;
+  color: #4c6653;
+  background: #fff;
+  border: 1px solid #dfe7da;
+  border-radius: 7px;
+}
+.voice-status {
+  font-size: 11px;
+  line-height: 1.5;
+  margin: 8px 0 3px;
+  color: #526b59;
+}
+.voice-privacy {
+  font-size: 10px;
+  color: #71806e;
+}
 .composer textarea {
   font-size: 14px;
 }

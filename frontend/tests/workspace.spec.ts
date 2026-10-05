@@ -1,5 +1,101 @@
 import { test, expect, type Page } from "@playwright/test";
 
+test("voice drafts commands without sending and stops on navigation", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    class FakeRecognition {
+      onresult: ((event: unknown) => void) | null = null;
+      onend: (() => void) | null = null;
+      onerror: ((event: unknown) => void) | null = null;
+      start() {
+        (window as unknown as Record<string, unknown>).testRecognition = this;
+      }
+      stop() {
+        this.onend?.();
+      }
+      abort() {
+        (window as unknown as Record<string, unknown>).voiceAborted = true;
+      }
+    }
+    Object.defineProperty(window, "SpeechRecognition", {
+      value: FakeRecognition,
+    });
+  });
+  const api = await mockApi(page);
+  await signIn(page);
+  await page.getByLabel("Message", { exact: true }).fill("Please");
+  await page.getByRole("button", { name: "Start voice input" }).click();
+  await expect(
+    page.getByRole("button", { name: "Stop voice input" }),
+  ).toBeVisible();
+  await page.evaluate(() => {
+    const recognition = (
+      window as unknown as {
+        testRecognition: { onresult: (event: unknown) => void };
+      }
+    ).testRecognition;
+    recognition.onresult({
+      results: [{ isFinal: false, 0: { transcript: "list my" } }],
+    });
+    recognition.onresult({
+      results: [{ isFinal: true, 0: { transcript: "list my notes" } }],
+    });
+  });
+  await expect(page.getByLabel("Message", { exact: true })).toHaveValue(
+    "Please list my notes",
+  );
+  expect(api.chatBodies).toEqual([]);
+  await page.getByRole("button", { name: "Stop voice input" }).click();
+  await expect(
+    page.getByText("Voice captured. Review your command, then send."),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Send message" }).click();
+  await expect(
+    page.getByRole("button", { name: "Send message" }),
+  ).toBeDisabled();
+  expect(api.chatBodies).toEqual([
+    { message: "Please list my notes", conversation_id: null },
+  ]);
+  await page.getByRole("button", { name: "Start voice input" }).click();
+  await page.getByRole("button", { name: /^Notes/ }).click();
+  expect(
+    await page.evaluate(
+      () => (window as unknown as Record<string, unknown>).voiceAborted,
+    ),
+  ).toBe(true);
+});
+
+test("voice permission failures preserve typed text", async ({ page }) => {
+  await page.addInitScript(() => {
+    class DeniedRecognition {
+      onerror: ((event: { error: string }) => void) | null = null;
+      onend: (() => void) | null = null;
+      start() {
+        setTimeout(() => {
+          this.onerror?.({ error: "not-allowed" });
+          this.onend?.();
+        }, 10);
+      }
+      abort() {}
+    }
+    Object.defineProperty(window, "SpeechRecognition", {
+      value: DeniedRecognition,
+    });
+  });
+  await mockApi(page);
+  await signIn(page);
+  await page.getByLabel("Message", { exact: true }).fill("Keep this draft");
+  await page.getByRole("button", { name: "Start voice input" }).click();
+  await expect(page.getByText(/Microphone permission denied/)).toBeVisible();
+  await expect(page.getByLabel("Message", { exact: true })).toHaveValue(
+    "Keep this draft",
+  );
+  await expect(
+    page.getByRole("button", { name: "Start voice input" }),
+  ).toBeEnabled();
+});
+
 test("formatted replies render safely and fit desktop and mobile", async ({
   page,
 }) => {

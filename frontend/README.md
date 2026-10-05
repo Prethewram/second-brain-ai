@@ -33,6 +33,13 @@ the backend does not currently expose conversation-history retrieval.
 - Readable reply cards with Markdown headings, lists, tables, and code blocks,
   plus a copy-reply button. Raw HTML is disabled and unsafe link schemes are
   filtered by the Markdown renderer.
+- Voice commands: click Voice, allow microphone access, speak, then stop and
+  review the transcript before sending. English (India/US), Hindi, and Tamil
+  language options are provided. The browser's Web Speech API transcribes the
+  audio and may use an online service; audio is not stored by this application.
+  Recognition availability and language support depend on the browser/service.
+  Use localhost for development and HTTPS in production. Unsupported browsers
+  retain typed input. Leaving chat, switching tabs, or signing out stops capture.
 - Notes: create, edit, archive, restore, delete, and search.
 - Tasks: create, edit, complete, delete, search, and completed-item filtering.
 - Memories: search, edit, and delete; new memories are extracted through chat.

@@ -13,6 +13,7 @@ import {
 import { ApiError } from "./api";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import VoiceInput from "./VoiceInput";
 
 function Reply({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -64,17 +65,20 @@ export default function Chat({
   onUpdated,
   onError,
   userName,
+  active,
 }: {
   call: <T>(path: string, method?: string, body?: unknown) => Promise<T>;
   onUpdated: () => Promise<void>;
   onError: (error: unknown) => void;
   userName: string;
+  active: boolean;
 }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [conversation, setConversation] = useState<number | null>(null);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [voiceVersion, setVoiceVersion] = useState(0);
   const bottom = useRef<HTMLDivElement>(null);
   const input = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
@@ -84,6 +88,7 @@ export default function Chat({
     event.preventDefault();
     const text = draft.trim();
     if (!text || busy) return;
+    setVoiceVersion((version) => version + 1);
     setDraft("");
     setError("");
     setBusy(true);
@@ -160,6 +165,7 @@ export default function Chat({
             setConversation(null);
             setError("");
             setDraft("");
+            setVoiceVersion((version) => version + 1);
           }}
           disabled={busy}
         >
@@ -190,6 +196,7 @@ export default function Chat({
                   key={prompt.title}
                   className="prompt-card"
                   onClick={() => {
+                    setVoiceVersion((version) => version + 1);
                     setDraft(prompt.text);
                     input.current?.focus();
                   }}
@@ -238,12 +245,21 @@ export default function Chat({
         </p>
       )}
       <form className="composer" onSubmit={send}>
+        <VoiceInput
+          key={voiceVersion}
+          draft={draft}
+          onText={setDraft}
+          disabled={busy || !active}
+        />
         <textarea
           ref={input}
           aria-label="Message"
           placeholder="Ask about your notes, plan your day, or save a thought…"
           value={draft}
-          onChange={(event) => setDraft(event.target.value)}
+          onChange={(event) => {
+            setVoiceVersion((version) => version + 1);
+            setDraft(event.target.value);
+          }}
           maxLength={12000}
           rows={2}
           disabled={busy}
