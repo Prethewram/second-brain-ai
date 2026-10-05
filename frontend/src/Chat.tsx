@@ -112,6 +112,7 @@ export default function Chat({
   const [error, setError] = useState("");
   const [voiceVersion, setVoiceVersion] = useState(0);
   const bottom = useRef<HTMLDivElement>(null);
+  const scrollArea = useRef<HTMLDivElement>(null);
   const input = useRef<HTMLTextAreaElement>(null);
   const voice = useVoiceReply(active);
   const transcript = useRef<HTMLDivElement>(null);
@@ -128,7 +129,10 @@ export default function Chat({
     }
   }, [messages, active, voice]);
   useEffect(() => {
-    bottom.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    scrollArea.current?.scrollTo({
+      top: messages.length || busy ? scrollArea.current.scrollHeight : 0,
+      behavior: messages.length ? "smooth" : "instant",
+    });
   }, [messages, busy]);
   async function send(event: React.FormEvent) {
     event.preventDefault();
@@ -229,7 +233,7 @@ export default function Chat({
         supported={voice.supported}
         speak={(text, started) => voice.play(-1, text, started)}
       />
-      <div className="chat-scroll">
+      <div className="chat-scroll" ref={scrollArea}>
         {messages.length === 0 ? (
           <div className="chat-welcome">
             <div className="welcome-mark">

@@ -159,13 +159,17 @@ export default function VoiceInput({
       </div>
       <p role="status" className="voice-status">
         {Constructor
-          ? status || "Speak to draft a command. Review it before sending."
+          ? status
           : "Voice input is unavailable in this browser. You can still type your command."}
       </p>
       {Constructor && (
-        <small className="voice-privacy">
-          Your browser handles speech recognition and may use an online service.
-        </small>
+        <details className="voice-privacy">
+          <summary>Speech privacy</summary>
+          <small>
+            Your browser handles speech recognition and may use an online
+            service. Review your transcript before sending.
+          </small>
+        </details>
       )}
     </div>
   );

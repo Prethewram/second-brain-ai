@@ -2349,6 +2349,176 @@ a {
     font-size: 11px;
   }
 }
+/* Keep the conversation central and the composer compact. */
+.workspace:has(.chat-layout) .topbar {
+  height: 44px;
+}
+.workspace:has(.chat-layout) .page-heading {
+  padding: 16px 0 18px;
+}
+.workspace:has(.chat-layout) .page-heading h1 {
+  font-size: 28px;
+}
+.workspace:has(.chat-layout) .workspace-footer {
+  padding: 12px 0;
+}
+.chat-layout {
+  grid-template-columns: minmax(0, 1fr) 230px;
+  gap: 20px;
+  min-height: 0;
+}
+.chat-panel {
+  height: max(620px, calc(100dvh - 190px));
+  min-height: 0;
+  max-height: none;
+}
+.panel-top {
+  padding: 12px 0;
+  flex-shrink: 0;
+}
+.personal-greeting {
+  padding: 12px 22px;
+  flex-shrink: 0;
+}
+.personal-greeting h2 {
+  font-size: 20px;
+}
+.chat-welcome {
+  padding: 25px 24px;
+  max-width: 650px;
+}
+.chat-welcome h2 {
+  font-size: 28px;
+}
+.chat-welcome .welcome-mark {
+  width: 40px;
+  height: 40px;
+  margin-bottom: 10px;
+}
+.chat-welcome > p {
+  font-size: 13px;
+}
+.prompt-card > span:not(.prompt-arrow) {
+  font-size: 12px;
+  max-width: none;
+}
+.messages {
+  max-width: 980px;
+  padding: 24px 28px;
+}
+.composer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px 12px;
+  padding: 14px 16px 12px;
+  flex-shrink: 0;
+  margin: 8px 18px 0;
+}
+.composer textarea {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  min-height: 54px;
+  font-size: 15px;
+}
+.composer .voice-input {
+  grid-column: 1;
+  grid-row: 2;
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.composer .voice-output-controls {
+  grid-column: 2;
+  grid-row: 2;
+  justify-content: flex-end;
+  margin: 0;
+  align-content: start;
+}
+.voice-output-controls label {
+  flex-direction: row;
+  white-space: nowrap;
+}
+.voice-output-controls select {
+  max-width: 150px;
+}
+.voice-input .voice-status {
+  margin: 5px 0 0;
+}
+.voice-status:empty {
+  display: none;
+}
+.composer > .voice-status {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+.voice-privacy {
+  margin-top: 5px;
+}
+.voice-privacy summary {
+  cursor: pointer;
+  font-size: 10px;
+  color: #72816c;
+}
+.voice-privacy small {
+  display: block;
+  max-width: 330px;
+  padding-top: 4px;
+  line-height: 1.5;
+}
+.composer-bottom {
+  grid-column: 1 / -1;
+  border-top: 1px solid #e7ece2;
+  padding-top: 7px;
+}
+.chat-disclaimer {
+  padding: 7px 12px 10px;
+  font-size: 9px;
+  flex-shrink: 0;
+}
+@media (max-width: 1200px) {
+  .chat-layout {
+    grid-template-columns: 1fr;
+  }
+  .context-rail {
+    display: none;
+  }
+}
+@media (max-width: 700px) {
+  .chat-panel {
+    height: max(650px, calc(100dvh - 220px));
+  }
+  .personal-greeting {
+    padding: 12px 16px;
+  }
+  .personal-greeting h2 {
+    font-size: 18px;
+  }
+  .chat-welcome {
+    padding: 24px 16px;
+  }
+  .chat-welcome h2 {
+    font-size: 26px;
+  }
+  .composer {
+    margin: 8px 10px 0;
+    padding: 12px;
+    gap: 8px;
+  }
+  .composer .voice-output-controls {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    justify-content: flex-start;
+  }
+  .composer .voice-input {
+    grid-column: 1 / -1;
+  }
+  .composer textarea {
+    font-size: 16px;
+  }
+  .messages {
+    padding: 20px 14px;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
