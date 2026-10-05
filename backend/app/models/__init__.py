@@ -5,3 +5,4 @@ from app.models.memory import Memory
 from app.models.task import Task
 from app.models.notes import Note
 from app.models.profile import Profile
+from app.models.meeting import Meeting

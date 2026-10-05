@@ -17,6 +17,7 @@ class NoteRepository(BaseRepository[Note]):
         content: str,
         category: str = "general",
         source: str = "manual",
+        meeting_id: int | None = None,
     ) -> Note:
 
         return super().create(
@@ -25,6 +26,7 @@ class NoteRepository(BaseRepository[Note]):
             content=content,
             category=category,
             source=source,
+            meeting_id=meeting_id,
         )
 
     def get(

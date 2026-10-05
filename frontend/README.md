@@ -34,6 +34,9 @@ the backend does not currently expose conversation-history retrieval.
 - Tasks: create, edit, complete, delete, search, and completed-item filtering.
 - Memories: search, edit, and delete; new memories are extracted through chat.
 - Profile: create/update supported fields and delete the profile.
+- Meetings / MOM: capture structured minutes, edit meetings, and add linked notes
+  and tasks. Complete tasks from the meeting; deleting a meeting keeps its notes
+  and tasks in the library. No Gemini request is needed.
 - Responsive navigation, accessible labels, keyboard-friendly dialogs,
   deletion confirmation, empty states, and request retry.
 
@@ -53,7 +56,9 @@ npm test
 The production build includes TypeScript checking. Browser tests mock API calls
 and exercise authentication, note lifecycle, task completion, profile saving,
 conversation continuity, expired sessions, retry, and mobile layout. They never
-call Gemini or touch your database. Generated reports and screenshots are ignored
+call Gemini or touch your database. A meeting workflow test covers creation,
+linked notes/tasks, completion, editing, and preservation after deletion.
+Generated reports and screenshots are ignored
 by Git. Backend integration tests separately verify real API behavior.
 
 ## Production hosting

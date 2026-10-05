@@ -16,6 +16,7 @@ class TaskRepository(BaseRepository[Task]):
         description: str | None = None,
         priority: str = "medium",
         deadline: str | None = None,
+        meeting_id: int | None = None,
     ) -> Task:
 
         return super().create(
@@ -24,6 +25,7 @@ class TaskRepository(BaseRepository[Task]):
             description=description,
             priority=priority,
             deadline=deadline,
+            meeting_id=meeting_id,
         )
 
     def get(

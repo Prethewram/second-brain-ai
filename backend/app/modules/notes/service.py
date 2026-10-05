@@ -1,6 +1,7 @@
 from app.common.exceptions import ValidationException
 from app.core.base_service import BaseService
 from app.modules.notes.repository import NoteRepository
+from app.modules.meetings.service import get_owned_meeting
 
 
 class NoteService(BaseService):
@@ -25,9 +26,12 @@ class NoteService(BaseService):
         content: str,
         category: str = "general",
         source: str = "manual",
+        meeting_id: int | None = None,
     ):
 
         title = self._validate_text(title, "Title", 255)
+        if meeting_id is not None:
+            get_owned_meeting(self.repository.db, user_id, meeting_id)
         content = self._validate_text(content, "Content")
         category = self._validate_text(category, "Category", 100).lower()
         source = self._validate_text(source, "Source", 50)
@@ -38,6 +42,7 @@ class NoteService(BaseService):
             content=content,
             category=category,
             source=source,
+            meeting_id=meeting_id,
         )
 
     def get_note(

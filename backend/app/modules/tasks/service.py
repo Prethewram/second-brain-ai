@@ -4,6 +4,7 @@ from app.common.exceptions import (
 
 from app.core.base_service import BaseService
 from app.modules.tasks.repository import TaskRepository
+from app.modules.meetings.service import get_owned_meeting
 
 
 class TaskService(BaseService):
@@ -50,9 +51,12 @@ class TaskService(BaseService):
         description: str | None = None,
         priority: str = "medium",
         deadline: str | None = None,
+        meeting_id: int | None = None,
     ):
 
         title = self._validate_title(title)
+        if meeting_id is not None:
+            get_owned_meeting(self.repository.db, user_id, meeting_id)
         priority = self._validate_priority(priority, fallback=True)
         description = self._validate_optional_text(description, "Description")
         deadline = self._validate_optional_text(deadline, "Deadline", 100)
@@ -63,6 +67,7 @@ class TaskService(BaseService):
             description=description,
             priority=priority,
             deadline=deadline,
+            meeting_id=meeting_id,
         )
 
     def get_task(

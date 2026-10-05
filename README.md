@@ -4,6 +4,9 @@ A FastAPI backend for personal memories, notes, tasks, profiles, and AI chat.
 Data is stored in PostgreSQL. Authenticated chat uses Gemini to extract actions,
 save supported information, and respond using the user's stored context.
 The project includes a React + TypeScript frontend built with Vite and a FastAPI API.
+Meetings / MOM captures meeting dates, attendees, agendas, minutes, and decisions,
+with linked notes and tasks that also appear in the main library. This workflow
+works without AI requests.
 
 ## Frontend
 

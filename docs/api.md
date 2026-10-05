@@ -19,6 +19,22 @@ database. Authentication errors include the `WWW-Authenticate: Bearer` header.
 
 The existing successful registration and login response schemas are unchanged.
 
+## Meetings / MOM
+
+All meeting routes require a bearer token and enforce ownership. Other users'
+meeting IDs return 404. `GET /meetings` lists meetings; `POST /meetings` creates
+one with `title`, optional ISO `meeting_date`, `attendees`, `agenda`, `minutes`,
+and `decisions`. Title and minutes must be nonblank.
+
+`GET /meetings/{id}` returns these fields with linked `notes` and `tasks`.
+`PUT /meetings/{id}` replaces the meeting fields. `DELETE /meetings/{id}` returns
+204 and preserves its notes/tasks in the library, removing their meeting links.
+
+`POST /meetings/{id}/notes` and `POST /meetings/{id}/tasks` use the existing note
+and task creation fields and return 201. These items also appear in `/notes` and
+`/tasks`; use their existing edit and completion routes to update them. Meeting
+capture and linking do not call the AI provider.
+
 ## AI analysis
 
 `POST /ai/analyze` requires a bearer token and a nonempty `message` string.

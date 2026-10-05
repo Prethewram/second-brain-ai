@@ -23,6 +23,7 @@ import {
   X,
 } from "lucide-react";
 import Auth from "./Auth";
+import Meetings from "./Meetings";
 import Chat from "./Chat";
 import Editor, { type EditorState } from "./Editor";
 import {
@@ -36,15 +37,20 @@ import {
   type User,
 } from "./api";
 
-type View = "chat" | "notes" | "tasks" | "memories" | "profile";
+type View = "chat" | "notes" | "tasks" | "memories" | "profile" | "meetings";
 const navigation = [
   { id: "chat", label: "Thinking space", icon: MessageSquare },
   { id: "notes", label: "Notes", icon: FileText },
   { id: "tasks", label: "Tasks", icon: CheckCheck },
+  { id: "meetings", label: "Meetings / MOM", icon: FileText },
   { id: "memories", label: "Memories", icon: BrainCircuit },
   { id: "profile", label: "My profile", icon: UserRound },
 ] as const;
 const headings: Record<View, { title: string; description: string }> = {
+  meetings: {
+    title: "Meetings with a next step",
+    description: "Keep minutes, decisions, notes, and tasks together.",
+  },
   chat: {
     title: "Your thinking space",
     description: "Let it out. We’ll help you connect the dots.",
@@ -480,7 +486,7 @@ export default function App() {
             </div>
           </aside>
         </div>
-        {view !== "chat" && view !== "profile" && (
+        {view !== "chat" && view !== "profile" && view !== "meetings" && (
           <section className="library">
             <div className="library-toolbar">
               <div
@@ -797,6 +803,9 @@ export default function App() {
               </>
             )}
           </section>
+        )}
+        {view === "meetings" && (
+          <Meetings call={call} onUpdated={refresh} refreshKey={data} />
         )}
         {view === "profile" && (
           <ProfileForm

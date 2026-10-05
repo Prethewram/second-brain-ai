@@ -9,6 +9,12 @@ class Task(Base):
     __tablename__ = "tasks"
 
     id = Column(Integer, primary_key=True, index=True)
+    meeting_id = Column(
+        Integer,
+        ForeignKey("meetings.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
 
     user_id = Column(
         Integer,

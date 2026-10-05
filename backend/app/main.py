@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from app.modules.meetings.router import router as meetings_router
 
 from app.modules.auth.router import router as auth_router
 from app.modules.users.router import router as users_router
@@ -28,6 +29,7 @@ app.include_router(dev_router)
 app.include_router(notes_router)
 app.include_router(tasks_router)
 app.include_router(profile_router)
+app.include_router(meetings_router)
 
 
 @app.get("/")

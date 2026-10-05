@@ -3,8 +3,8 @@ import { LoaderCircle, X } from "lucide-react";
 import type { Memory, Note, Task } from "./api";
 
 export type EditorState =
-  | { kind: "notes"; item?: Note }
-  | { kind: "tasks"; item?: Task }
+  | { kind: "notes"; item?: Note; meetingId?: number }
+  | { kind: "tasks"; item?: Task; meetingId?: number }
   | { kind: "memories"; item: Memory };
 export default function Editor({
   editor,
@@ -49,7 +49,10 @@ export default function Editor({
               category: form.get("category"),
               importance: Number(form.get("importance")),
             };
-    const path = `/${kind === "memories" ? "memory" : kind}${item ? `/${item.id}` : ""}`;
+    const path =
+      !item && "meetingId" in editor && editor.meetingId
+        ? `/meetings/${editor.meetingId}/${kind}`
+        : `/${kind === "memories" ? "memory" : kind}${item ? `/${item.id}` : ""}`;
     try {
       await onSave(
         kind === "memories" ? "PUT" : item ? "PATCH" : "POST",
